@@ -1,0 +1,8 @@
+*.csv
+
+running
+stage_1_test_images
+stage_1_train_images
+
+notebooks/.ipynb_checkpoints
+.ipynb_checkpoints
