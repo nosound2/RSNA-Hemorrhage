@@ -1,5 +1,10 @@
 RSNA Intracranial Hemorrhage Detection
 
+metadata location
+```
+gs://rsna-hemorrhage
+```
+
 metadata columns to use:
 ```
 cols_cat = ['BitsStored','PixelRepresentation','RescaleIntercept','WindowCenter_1_NAN']

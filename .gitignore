@@ -1,4 +1,9 @@
-*.csv
+stage_1_sample_submission.csv
+stage_1_train.csv
+submission.csv
+submission20.csv
+test_metadata.csv
+train_metadata.csv
 
 running
 stage_1_test_images
