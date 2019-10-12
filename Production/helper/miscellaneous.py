@@ -2,6 +2,16 @@ import torch
 import smtplib
 
 def device_by_name(name):
+    ''' Return reference to cuda device by using Part of it's name
+        
+        Args:
+            name: part of the cuda device name (shuuld be distinct
+            
+        Return:
+            Reference to cuda device
+            
+        Updated: Yuval 12/10/19
+    '''
     assert torch.cuda.is_available(),"No cuda device"
     device=None
     for i in range(torch.cuda.device_count()):
@@ -13,6 +23,7 @@ def device_by_name(name):
     return device
 
 def gmean_torch(t,w,op = None):
+    # todo Doc
     wn = w/w.sum()
     tr = t.unsqueeze(-1).transpose(0,-1).squeeze(0)
     if op is not None:
@@ -22,6 +33,22 @@ def gmean_torch(t,w,op = None):
         tt=tt*torch.pow(tr[...,i],wn[i])
         
 class Email_Progress():
+    ''' class  - Email progress to myself
+    
+        Args:
+            source email    : Gmail user name, don't need the @gmail.com (don't use your mail account - risky)
+            source_password : Gmail Password (RiSK!!!!!!!!!!!)
+            target_email    : The recipt email
+            title           : Email's Title
+            
+       Methods:
+           __call__
+           Args:
+               history - directory with the data to send
+               
+       Update: Yuval 12/10/19
+    '''
+    
     def __init__(self,source_email,source_password,target_email,title):
         self.source_email=source_email
         self.source_password=source_password

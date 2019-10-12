@@ -31,15 +31,16 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
                 weights=None,accumulation_steps=1,
                 weights_func=None,do_apex=True,validate_dataset=None,
                 validate_loss=None,metric=None,param_schedualer=None,
-                weights_data=False,history=None,return_model=False,
-                num_workers=7,sampler=None,graph=None,k_lossf=0.01,pre_process=None,call_progress=None):
+                weights_data=False,history=None,return_model=False,model_apexed=False,
+                num_workers=7,sampler=None,graph=None,k_lossf=0.01,pre_process=None,call_progress=None,use_batchs=True):
     
     if history is None:
         history = []
     best_model=None
     best_val_loss=100000000
     device = get_model_device(model)
-    if do_apex and (device.type=='cuda'):
+    if do_apex and not model_apexed and (device.type=='cuda'):
+        model_apexed=True
         model, optimizer = amp.initialize(model, optimizer, opt_level="O1",verbosity=0)
     model.zero_grad()
     tq_epoch=tqdm_notebook(range(num_epochs))
@@ -49,8 +50,11 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
         if param_schedualer:
             param_schedualer(epoch)
         _=model.train()
+        batch_size_= batch_size if use_batchs else None
         if sampler:
-            data_loader=D.DataLoader(D.Subset(train_dataset,sampler()),batch_size=batch_size,shuffle=True,num_workers=num_workers)
+            data_loader=D.DataLoader(D.Subset(train_dataset,sampler()),num_workers=num_workers,
+                                     batch_size=batch_size if use_batchs else None,
+                                     shuffle=use_batchs)
         else:
             data_loader=D.DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=num_workers)
         sum_loss = 0.
@@ -76,7 +80,7 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
             else:
                 loss = loss_func(y_preds,y_batch)/accumulation_steps
 
-            if do_apex:
+            if model_apexed:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
                     scaled_loss.backward()
             else:
@@ -117,9 +121,10 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
                 val_weights =None
             res=model_evaluate(model,
                                validate_dataset,
-                               batch_size,
-                               vloss,
-                               val_weights,metric,
+                               batch_size = batch_size if use_batchs else None ,
+                               loss_func=vloss,
+                               weights=val_weights,
+                               metric=metric,
                                do_apex=False,
                                num_workers=num_workers)
                                      
@@ -134,6 +139,9 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
             call_progress(history)
     print (best_val_loss)
     return (history,best_model) if return_model else history
+
+
+
 
 def model_run(model,dataset,do_apex=True,batch_size=32,num_workers=6):
     _=model.eval()
@@ -222,12 +230,12 @@ def model_evaluate(model,
         tq_batch.set_postfix(**batch_postfix)
     epoch_postfix={'val_loss':sum_loss/len(data_loader)}
     if metric:
-        epoch_postfix.update(metric.calc_sum('val_'))
+        epoch_postfix.update(metric.calc_sums('val_'))
                                      
     return sum_loss/len(data_loader), epoch_postfix
 
 class loss_graph():
-    def __init__(self,fig,ax,num_epoch=1,batch2epoch=100):
+    def __init__(self,fig,ax,num_epoch=1,batch2epoch=100,limits=None):
         self.num_epoch=num_epoch
         self.batch2epoch=batch2epoch
         self.loss_arr=np.zeros(num_epoch*batch2epoch,dtype=np.float)
@@ -235,13 +243,14 @@ class loss_graph():
         self.num_points=0
         self.fig=fig
         self.ax = ax
+        self.limits=limits if limits is not None else (-1000,1000)
         self.ticks = (np.arange(0, num_epoch*batch2epoch+1, step=batch2epoch),np.arange(0, num_epoch+1, step=1))
     def __call__(self,loss):
         if self.num_points==self.arr_size:
             new_arr=np.zeros(self.arr_size+self.batch2epoch,dtype=np.float)
             new_arr[:self.arr_size]=self.loss_arr
             self.loss_arr=new_arr
-        self.loss_arr[self.num_points]=loss
+        self.loss_arr[self.num_points]=max(self.limits[0],min(self.limits[1],loss))
         self.num_points=self.num_points+1
         _=self.ax.clear()
         _=self.ax.plot(self.loss_arr[0:self.num_points])
