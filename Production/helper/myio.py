@@ -1,3 +1,9 @@
+'''
+I/O functions for RSNA 2019
+Updated: Yuval 12/10/19
+'''
+
+
 import os
 from skimage.io import imread
 import numpy as np
@@ -15,6 +21,22 @@ def load_one_image(pid,
                    file_path=train_path,
                    file_format=file_format,
                    window_eq=False,rescale=False):
+    '''
+    Load one image from a DICOM file 
+        Args:
+            pid             : string, image id
+            equalize         : Equalize - return (image-mean)/std
+            base_path       : Base File path for the images 
+            file_path       : file path for the images (from base_path)
+            file_format     : format string to get from pid to file name. default='ID_{}.dcm'
+            window_eq=False : Do window equaliztion: (for backward competability, don't use it anymore use WSO)
+                              False - No equalization
+                              True  - Do equalization with window = [(40,80),(80,200),(600,2800)]
+                              tuple/list shaped as above 
+            rescale=False    : Use DICOM parameters for rescale, done automaticaly if windows_eq!=False
+       Update:Yuval 12/10/19       
+    
+    '''
     dcm_data = pydicom.dcmread(base_path+ file_path+ file_format.format(pid))
     try:
         pixels = dcm_data.pixel_array
@@ -35,16 +57,22 @@ def load_one_image(pid,
                     pixels[i] = (pixels[i]-pixels[i].mean())/(pixels[i].std()+1e-6)
         else:
             pixels = dcm_window(dcm_data,pixels)
-            if rescale:
-                b = dcm.RescaleIntercept
-                m = dcm.RescaleSlope
-                pixel_array = m * pixel_array + b       
-            if equalize:
-                pixels = (pixels-pixels.mean())/(pixels.std()+1e-6)
+    else:
+        if rescale:
+            b = dcm_data.RescaleIntercept
+            m = dcm_data.RescaleSlope
+            pixels = m * pixels + b       
+        if equalize:
+            pixels = (pixels-pixels.mean())/(pixels.std()+1e-6)
     
     return pixels
 
 def dcm_window(dcm,pixel_array,window = None):
+    '''
+    return a windowed image.
+    if now window is provided, use the DICOM first window data
+    if window length ==3, use window data
+    '''
     ymin=0
     ymax=255
     if window is None:
