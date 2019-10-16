@@ -128,8 +128,9 @@ class MyTransform():
         out_sizex,out_sizey = imgs.shape[1:3] if self.out_sizex is None else (self.out_sizex,self.out_sizey)
         imgs=imgs.transpose(1,2,0)
         if (self.std_change>0) or (self.mean_change>0):
-            for i,ix in enumerate(self.channels):
-                imgs[i]=imgs[i]*np.random.normal(loc=1,scale=self.std_change)+np.random.normal(loc=0,scale=self.mean_change)
+#            for i,ix in enumerate(self.channels):
+#                imgs[i]=imgs[i]*np.random.normal(loc=1,scale=self.std_change)+np.random.normal(loc=0,scale=self.mean_change)
+            imgs=self.change_mean_std(imgs,np.random.randn(1)[0]*self.mean_change,1+np.random.randn(1)[0]*self.std_change)
         if self.do_flip:
             if (np.random.randint(2)>0):
                 imgs = self.flip(imgs)
@@ -138,8 +139,13 @@ class MyTransform():
             imgs=self.rotate(imgs,angle)       
         if self.shiftx>0:
             imgs=self.img_shift(imgs,np.random.randint(-self.shiftx,self.shiftx),np.random.randint(-self.shifty,self.shifty))
-        if self.zoom!=0:
-            factor=np.random.randn(1)[0]*self.zoom_factor
+        if self.zoom_factor!=0:
+            if isinstance(self.zoom_factor,tuple):
+                factor_x=np.random.randn(1)[0]*self.zoom_factor[0]
+                factor_y=np.random.randn(1)[0]*self.zoom_factor[1]
+                factor=(1+factor_x,1+factor_y)
+            else:
+                factor=1+np.random.randn(1)[0]*self.zoom_factor
             imgs=self.zoom(imgs,factor)
         x0=max(imgs.shape[1]//2-cropx//2,0)
         y0=max(imgs.shape[0]//2-cropy//2,0)
@@ -181,8 +187,8 @@ class MyTransform():
         return transform.resize(img,(hight,width),anti_aliasing=True)
     
     def zoom(self,img,factor):
-        timg=transform.rescale(img,1.0+factor,multichannel=True,mode='constant',cval=float(img.min()))
-        return transform.rescale(img,1.0+factor,multichannel=True,mode='constant',cval=float(img.min()))
+#        timg=transform.rescale(img,1.0+factor,multichannel=True,mode='constant',cval=float(img.min()))
+        return transform.rescale(img,factor,multichannel=True,mode='constant',cval=float(img.min()))
     
     def rotate(self,img,angle,resize=True):
         return transform.rotate(img, angle, resize=resize, center=None, order=1, 

@@ -19,6 +19,7 @@ from apex import amp
 import copy
 from scipy.spatial import distance_matrix
 import matplotlib.pyplot as plt
+from .mymodels import mean_model
 def get_model_device(model):
     p = next(model.parameters())
     if p.is_cuda:
@@ -32,12 +33,14 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
                 weights_func=None,do_apex=True,validate_dataset=None,
                 validate_loss=None,metric=None,param_schedualer=None,
                 weights_data=False,history=None,return_model=False,model_apexed=False,
-                num_workers=7,sampler=None,graph=None,k_lossf=0.01,pre_process=None,call_progress=None,use_batchs=True):
+                num_workers=7,sampler=None,graph=None,k_lossf=0.01,pre_process=None,
+                call_progress=None,use_batchs=True,best_average=1):
     
     if history is None:
         history = []
-    best_model=None
-    best_val_loss=100000000
+    num_average_models=min(num_epochs,best_average)
+    best_models=np.empty(num_average_models+1,dtype=object)
+    best_val_loss=1e6*np.ones(num_average_models+1,dtype=np.float)
     device = get_model_device(model)
     if do_apex and not model_apexed and (device.type=='cuda'):
         model_apexed=True
@@ -45,6 +48,8 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
     model.zero_grad()
     tq_epoch=tqdm_notebook(range(num_epochs))
     for epoch in tq_epoch:
+        best_models[1:]=best_models[:num_average_models]
+        best_val_loss[1:]=best_val_loss[:num_average_models]
         torch.cuda.empty_cache()
         model.do_grad()
         if param_schedualer:
@@ -129,15 +134,41 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
                                num_workers=num_workers)
                                      
             history[-1].update(res[1])
-            if res[0]<best_val_loss:
-                best_val_loss=res[0]
-                best_model=copy.deepcopy(model)
-                best_model.no_grad()
+            best_val_loss[0] = res[0]
+            best_models[0] = copy.deepcopy(model).to('cpu')
+            best_models[0].no_grad()
+            best_models=best_models[np.argsort(best_val_loss)]
+            best_val_loss=best_val_loss[np.argsort(best_val_loss)]
+#            if res[0]<best_val_loss:
+#                best_val_loss=res[0]
+#                best_model=copy.deepcopy(model)
+#                best_model.no_grad()
             tq_epoch.set_postfix(res[1])
         print(history[-1])
         if call_progress is not None:
             call_progress(history)
-    print (best_val_loss)
+    if num_average_models>1:
+        best_model=mean_model(best_models[:num_average_models])
+        model=model.to('cpu')
+        best_model=best_model.to(device)
+        res=model_evaluate(best_model,
+                               validate_dataset,
+                               batch_size = batch_size if use_batchs else None ,
+                               loss_func=vloss,
+                               weights=val_weights,
+                               metric=metric,
+                               do_apex=False,
+                               num_workers=num_workers)
+        best_model=best_model.to('cpu')
+        model=model.to(device)
+        if res[0]>best_val_loss[0]:
+            best_model=best_models[0]
+            print (best_val_loss[0])
+        else:
+            print (res)
+    else:
+        best_model=best_models[0]
+        print (best_val_loss)
     return (history,best_model) if return_model else history
 
 
