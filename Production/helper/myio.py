@@ -43,12 +43,11 @@ def load_one_image(pid,
     except:
         print('got some error with pid {}.format(pid)')
         pixels = np.zeros((512,512))
-    if pixels.shape[0]==pixels.shape[1]:
-        m = max(pixels.shape)
-        p = np.ones((m,m))*pixels[0,0]
-        p[(m-pixels.shape[0])//2:(m-pixels.shape[0])//2+pixels.shape[0],
-          (m-pixels.shape[1])//2:(m-pixels.shape[1])//2+pixels.shape[1]]=pixels
-        pixels = p
+    m = max(pixels.shape)
+    p = np.ones((m,m),dtype=np.float)*pixels[0,0]
+    p[(m-pixels.shape[0])//2:(m-pixels.shape[0])//2+pixels.shape[0],
+      (m-pixels.shape[1])//2:(m-pixels.shape[1])//2+pixels.shape[1]]=pixels
+    pixels = p
     if window_eq:
         if window_eq==3:
             pixels = dcm_window3(dcm_data,pixels)

@@ -202,10 +202,10 @@ class MySENet(nn.Module):
                 self.features.add_module('wso_relu',nn.Sigmoid())
                 self.features.add_module('wso_norm',nn.InstanceNorm2d(self.num_channels))
 
-            layer0= torch.nn.Sequential()
-            layer0.add_module('conv1',model.conv1)
-            layer0.add_module('bn1',model.bn1)                        
-            se_layers={'layer0':layer0, 
+#            layer0= torch.nn.Sequential()
+#            layer0.add_module('conv1',model.conv1)
+#            layer0.add_module('bn1',model.bn1)                        
+            se_layers={'layer0':model.layer0,
                        'layer1':model.layer1,
                        'layer2':model.layer2,
                        'layer3':model.layer3,
@@ -213,7 +213,7 @@ class MySENet(nn.Module):
             for key in se_layers:
                 self.features.add_module(key,se_layers[key])
         self.dropout = dropout if dropout is None else nn.Dropout(p=dropout, inplace=True)
-        self.classifier=nn.Linear(model.fc.in_features//self.extra_pool, self.num_classes)
+        self.classifier=nn.Linear(model.last_linear.in_features//self.extra_pool, self.num_classes)
         
         
     def forward(self, x):
@@ -364,10 +364,11 @@ class NeighborsNet(nn.Module):
 def mean_model(models):
     model = copy.deepcopy(models[0])
     params=[]
-    for model in models:
-        params.append(dict(model.named_parameters()))
+    for model_ in models:
+        params.append(dict(model_.named_parameters()))
 
     param_dict=dict(model.named_parameters())
 
     for name in param_dict.keys():
         _=param_dict[name].data.copy_(torch.cat([param[name].data[...,None] for param in params],-1).mean(-1))
+    return model
