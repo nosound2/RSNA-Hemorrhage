@@ -90,7 +90,10 @@ class MyTransform():
                  zoom=0.0,
                  rotate=0,
                  shift=0,
-                 out_size=None):
+                 out_size=None,
+                 normal=True,
+                 anti_aliasing=True
+                ):
         
         self.do_flip = flip
         self.rotate_angle=rotate
@@ -98,6 +101,7 @@ class MyTransform():
         self.std_change = std_change
         np.random.seed(seed)
         self.zoom_factor=zoom
+        self.anti_aliasing=anti_aliasing
 
         if isinstance (crop,tuple):
             self.cropx=crop[0]
@@ -117,6 +121,10 @@ class MyTransform():
         else:
             self.out_sizex=out_size
             self.out_sizey=out_size
+        if normal:
+            self.randf = lambda n: torch.randn(n).numpy() 
+        else:        
+            self.randf = lambda n: 2.0*torch.rand(n).numpy()-1.0
         
     def random(self,imgs):
         sqz=False
@@ -130,20 +138,20 @@ class MyTransform():
         if (self.std_change>0) or (self.mean_change>0):
 #            for i,ix in enumerate(self.channels):
 #                imgs[i]=imgs[i]*np.random.normal(loc=1,scale=self.std_change)+np.random.normal(loc=0,scale=self.mean_change)
-            imgs=self.change_mean_std(imgs,np.random.randn(1)[0]*self.mean_change,1+np.random.randn(1)[0]*self.std_change)
+            imgs=self.change_mean_std(imgs,self.randf(1)[0]*self.mean_change,1+self.randf(1)[0]*self.std_change)
         if self.do_flip:
-            if (np.random.randint(2)>0):
+            if (torch.randint(low=0,high=2,size=(1,))[0]>0):
                 imgs = self.flip(imgs)
         if self.rotate_angle>0:
-            angle=np.random.randint(-self.rotate_angle,self.rotate_angle)
+            angle=int(torch.randint(-self.rotate_angle,self.rotate_angle,(1,))[0])
             imgs=self.rotate(imgs,angle)       
         if self.shiftx>0:
             imgs=self.img_shift(imgs,np.random.randint(-self.shiftx,self.shiftx),np.random.randint(-self.shifty,self.shifty))
         if self.zoom_factor!=0:
             if isinstance(self.zoom_factor,tuple):
-                factor_x=np.random.randn(1)[0]*self.zoom_factor[0]
-                factor_y=np.random.randn(1)[0]*self.zoom_factor[1]
-                factor=(1+factor_x,1+factor_y)
+                factor_x=1+self.randf(1)[0]*self.zoom_factor[0]
+                factor_y=(1+self.randf(1)[0]*self.zoom_factor[1])*factor_x
+                factor=(factor_x,factor_y)
             else:
                 factor=1+np.random.randn(1)[0]*self.zoom_factor
             imgs=self.zoom(imgs,factor)
@@ -184,7 +192,7 @@ class MyTransform():
         return img
     
     def resize(self,img,width,hight):
-        return transform.resize(img,(hight,width),anti_aliasing=True)
+        return transform.resize(img,(hight,width),anti_aliasing=self.anti_aliasing)
     
     def zoom(self,img,factor):
 #        timg=transform.rescale(img,1.0+factor,multichannel=True,mode='constant',cval=float(img.min()))
@@ -296,7 +304,7 @@ class Mixup():
         out_images = (lambd*images.transpose(0,-1)+(1-lambd)*images[shuffle].transpose(0,-1)).transpose(0,-1)
         out_targets = torch.cat([targets.unsqueeze(-1),
                                  targets[shuffle].unsqueeze(-1),
-                                 lambd.unsqueeze(-1).repeat(1,targets.shape[-1]).unsqueeze(-1)],-1)
+                                 lambd.expand_as(targets.transpose(0,-1)).transpose(0,-1).unsqueeze(-1)],-1)
 #        out_targets = (lambd*targets.transpose(0,-1)+(1-lambd)*targets[shuffle].transpose(0,-1)).transpose(0,-1)
         return out_images, out_targets
 
@@ -470,7 +478,8 @@ class FullHeadImageDataset(Dataset):
                  window_eq=False,
                  equalize=False,
                  rescale=True, 
-                 target_columns=None):
+                 target_columns=None,
+                 full_transform=True):
         super(FullHeadImageDataset, self).__init__()
         self.df = df
         self.SeriesIDs=SeriesIDs
@@ -483,6 +492,7 @@ class FullHeadImageDataset(Dataset):
         self.window_eq=window_eq
         self.equalize = equalize
         self.rescale=rescale
+        self.full_transform=full_transform
         self.ref_arr=df[ref_column].values
         self.order_arr=df[order_column].values
         self.target_tensor=None if target_columns is None else torch.tensor(df[self.target_columns].values,dtype=torch.float)
@@ -498,10 +508,12 @@ class FullHeadImageDataset(Dataset):
         for i in sorted_head_idx:
             sample=load_one_image(self.pids[i],equalize=self.equalize,base_path=self.base_path,file_path='',
                                   window_eq=self.window_eq,rescale=self.rescale)[None]
+            if (not self.full_transform) and (self.transform is not None):
+                sample = self.transform(sample)
             samples.append(sample)
         headimages=np.concatenate(samples,0)
         headimages = torch.tensor(headimages,dtype=torch.float) \
-                if self.transform is None else torch.tensor(self.transform(headimages),dtype=torch.float)
+                if ((self.transform is None) or (not self.full_transform)) else torch.tensor(self.transform(headimages),dtype=torch.float)
         headimages=headimages[:,None]  # lat's make a batch out of it.
         if self.target_tensor is not None:
             targets=self.target_tensor[sorted_head_idx]
@@ -532,7 +544,7 @@ class FullHeadDataset(Dataset):
                             targets - tensor size (# of images in series,len(target_columns)), dtype=torch.float
         Update:Yuval 12/10/19       
     '''
-    def __init__(self, df, SeriesIDs,features, ref_column,order_column,target_columns=None,max_len=60):
+    def __init__(self, df, SeriesIDs,features, ref_column,order_column,target_columns=None,max_len=60,multi=1):
         """
         Args:
             Todo
@@ -546,6 +558,7 @@ class FullHeadDataset(Dataset):
         self.order_arr=df[order_column].values
         self.max_len=max_len
         self.SeriesIDs=SeriesIDs
+        self.multi=multi
                 
                               
 
@@ -553,12 +566,22 @@ class FullHeadDataset(Dataset):
         return self.SeriesIDs.shape[0] 
 
     def __getitem__(self, idx):
-        sample = torch.zeros((self.max_len,self.features.shape[-1]),dtype=torch.float)
+        sample = torch.zeros((self.max_len,self.features.shape[-1]*self.multi),dtype=torch.float)
         head_idx=np.where(self.ref_arr==self.SeriesIDs[idx])[0]
         sorted_head_idx=head_idx[np.argsort(self.order_arr[head_idx])]
-        if self.features.dim()==3:
-            tta_idx=np.random.randint(0,self.features.shape[1],size=head_idx.shape[0])
-            sample[:head_idx.shape[0]]=self.features[sorted_head_idx,tta_idx]
+        if self.features.dim()==3:         
+            if self.multi>1:
+                tta_idx=torch.zeros((head_idx.shape[0],self.multi),dtype=torch.long)
+                for i in range(head_idx.shape[0]):
+                    tta_idx[i]=torch.randperm(self.features.shape[1],dtype=torch.long)[:self.multi]
+#                tta_idx2=(tta_idx+torch.LongTensor(head_idx.shape[0]).random_(1, self.features.shape[1]))%self.features.shape[1]
+                sample[:head_idx.shape[0]]=torch.cat([self.features[sorted_head_idx,tta_idx[:,i]] for i in range(self.multi)],-1)
+
+            else:
+                tta_idx=torch.LongTensor(head_idx.shape[0]).random_(0, self.features.shape[1])
+                sample[:head_idx.shape[0]]=self.features[sorted_head_idx,tta_idx]
+
+
         else:
             sample[:head_idx.shape[0]]=self.features[sorted_head_idx]
         if self.target_tensor is not None:

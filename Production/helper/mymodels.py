@@ -176,7 +176,8 @@ class MySENet(nn.Module):
                  wso=None,
                  full_copy=False,
                  dont_do_grad=['wso'],
-                 extra_pool=1):
+                 extra_pool=1,
+                 do_bn=False):
         super(MySENet, self).__init__()
         self.num_classes=num_classes
         self.return_features=return_features
@@ -200,7 +201,10 @@ class MySENet(nn.Module):
 
                 self.features.add_module('wso_conv',conv_)
                 self.features.add_module('wso_relu',nn.Sigmoid())
-                self.features.add_module('wso_norm',nn.InstanceNorm2d(self.num_channels))
+                if do_bn:
+                    self.features.add_module('wso_norm',nn.BatchNorm2d(self.num_channels))
+                else:
+                    self.features.add_module('wso_norm',nn.InstanceNorm2d(self.num_channels))
 
 #            layer0= torch.nn.Sequential()
 #            layer0.add_module('conv1',model.conv1)
