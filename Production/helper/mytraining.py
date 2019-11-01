@@ -47,6 +47,7 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
         model, optimizer = amp.initialize(model, optimizer, opt_level="O1",verbosity=0)
     model.zero_grad()
     tq_epoch=tqdm_notebook(range(num_epochs))
+    lossf=None
     for epoch in tq_epoch:
         best_models[1:]=best_models[:num_average_models]
         best_val_loss[1:]=best_val_loss[:num_average_models]
@@ -63,7 +64,6 @@ def model_train(model,optimizer,train_dataset,batch_size,num_epochs,loss_func,
         else:
             data_loader=D.DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=num_workers)
         sum_loss = 0.
-        lossf=None
         if metric:
             metric.zero()
         tq_batch = tqdm_notebook(data_loader,leave=True)

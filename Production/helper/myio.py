@@ -9,6 +9,7 @@ from skimage.io import imread
 import numpy as np
 import torch
 import pydicom
+import SimpleITK as sitk
 
 DEFAULT_IMAGES_BASE_PATH = '/media/nvme/data/RSNA/'
 train_path='stage_1_train_images/'
@@ -41,8 +42,12 @@ def load_one_image(pid,
     try:
         pixels = dcm_data.pixel_array
     except:
-        print('got some error with pid {}.format(pid)')
-        pixels = np.zeros((512,512))
+        try:
+            read_image = sitk.ReadImage(base_path+ file_path+ file_format.format(pid))
+            pixels = sitk.GetArrayFromImage(read_image)[0].astype(np.float32)
+        except:
+            print('got some error with pid {} {}'.format(pid,base_path+ file_path+ file_format.format(pid)))
+            pixels = np.zeros((512,512))
     m = max(pixels.shape)
     p = np.ones((m,m),dtype=np.float)*pixels[0,0]
     p[(m-pixels.shape[0])//2:(m-pixels.shape[0])//2+pixels.shape[0],
