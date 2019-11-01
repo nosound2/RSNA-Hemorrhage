@@ -1,24 +1,26 @@
-RSNA Intracranial Hemorrhage Detection
+# RSNA Intracranial Hemorrhage Detection challenge
 
-metadata location
-```
-gs://rsna-hemorrhage
-```
+Team "Mind Blowers":
 
-metadata columns to use:
-```
-cols_cat = ['BitsStored','PixelRepresentation','RescaleIntercept','WindowCenter_1_NAN']
-cols_float = ['ImageOrientationPatient_0', 'ImageOrientationPatient_1',
-       'ImageOrientationPatient_2', 'ImageOrientationPatient_3',
-       'ImageOrientationPatient_4', 'ImageOrientationPatient_5',
-       'ImagePositionPatient_0', 'ImagePositionPatient_1','ImagePositionPatient_2',
-        'PixelSpacing_0', 'PixelSpacing_1', 'WindowCenter_0', 'WindowCenter_1']
-```
+* [Yuval Reina](https://www.kaggle.com/yuval6967)
+* [Zahar Chikishev](https://www.kaggle.com/zaharch)
 
-and subset of the above columns which are significant:
-```
-significant_cols = ['PixelRepresentation', 'ImageOrientationPatient_4',
-       'ImagePositionPatient_0', 'ImagePositionPatient_1',
-       'ImagePositionPatient_2', 'PixelSpacing_0', 'PixelSpacing_1',
-       'WindowCenter_0']
-```
+The solution consists of the following components
+
+* Prepare metadata
+* Training features generating neural networks
+* Training shallow neural networks based on the features and metadata
+   * By Yuval
+   * By Zahar
+* Ensembling
+
+
+## Prepare metadata
+
+
+
+## Features generating neural networks
+
+## Shallow NN by Yuval
+
+## Shallow NN by Zahar
