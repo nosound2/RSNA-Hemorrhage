@@ -35,6 +35,10 @@ The features generating training notebooks are :
 
 These notebooks also run the models on the train and test data to extract the features (4 augmented samples for train and 8 for test)
 
+The MD5SUM of the current trained models before fine tunning on stage1 test:
+
+23261b8e24d70d538695685ef18abf74  model_.zip
+
 ## Shallow NN by Yuval
 These networks are taking features for a full series. 
 * `Post Full Head Models Train.ipynb`
