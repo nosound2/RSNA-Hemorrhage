@@ -31,19 +31,22 @@ The features generating training notebooks are :
 * `Production/Densenet201-folds.ipynb`
 * `Production/se_resnet101.ipynb`
 * `Production/se_resnext101_32x4d + prepare densenet features.ipynb`
-* `se_resnext101_32x4d-new_folds.ipynb`  (5 folds for se-resnext101 and se-resnet101
+* `se_resnext101_32x4d-new_folds.ipynb`  (5 folds for se-resnext101 and se-resnet101 and focal loss retraining
 
 These notebooks also run the models on the train and test data to extract the features (4 augmented samples for train and 8 for test)
 
 The MD5SUM of the current trained models before fine tunning on stage1 test:
 
-23261b8e24d70d538695685ef18abf74  model_.zip
+* 23261b8e24d70d538695685ef18abf74  model_.zip   (all non-focal loss models)
+* 1ca9069e66ce993dff762534b96da551  model_se_resnext101_32x4d_focal.zip (se_resnext101_32x4d focal loss)
+* 598f2cf2d8d4c3c29f1da4ee7193ebba  model_se_resnet101_version_new_splits_focal_split_.zip (se_resnet101 focal loss)
 
 ## Shallow NN by Yuval
 These networks are taking features for a full series. 
 * `Post Full Head Models Train.ipynb`
 * `Post Full Head Models Train - new split.ipynb`
-The network that was used at the end is ResModelPoll
+* `Post Full Head Models Train-focal features.ipynb` shallow nets for focal loss output very drafty)
+The network that was used at the end is ResModelPoll and all use weighted BCE as loss
 
 The inference is finally done using  `prepare_ensembling.ipynb` which use the features from the base model and the Shallow NN th create prediction that are then ensembled by Zahar.
 
