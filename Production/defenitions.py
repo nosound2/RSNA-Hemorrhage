@@ -8,5 +8,5 @@ outputs_format='model_{}_version_{}_type_{}_split_{}.pkl'
 hemorrhage_types=['epidural','intraparenchymal','intraventricular','subarachnoid','subdural','any']
 bad_images = ['e20bf3f8a','8da38f2e4','6431af929','470e639ae','0e21abf7a','d91d52bdc']
 my_gmail='yuval6967'
-my_pass='asaf1506'
+my_pass='*******'
 to_email='yuval6967@gmail.com'
