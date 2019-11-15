@@ -1,12 +1,12 @@
 data_dir = '/media/nvme/data/RSNA/'
 train_images_dir=data_dir+'stage_1_train_images/'
-test_images_dir=data_dir+'stage_1_test_images/'
+test_images_dir=data_dir+'stage_2_test_images/'
 models_dir = '/media/hd/notebooks/data/RSNA/models/'
 outputs_dir = '/media/hd/notebooks/data/RSNA/outputs/'
 models_format='model_{}_version_{}_split_{}.pth'
 outputs_format='model_{}_version_{}_type_{}_split_{}.pkl'
 hemorrhage_types=['epidural','intraparenchymal','intraventricular','subarachnoid','subdural','any']
 bad_images = ['e20bf3f8a','8da38f2e4','6431af929','470e639ae','0e21abf7a','d91d52bdc']
-my_gmail='yuval6967'
-my_pass='*******'
-to_email='yuval6967@gmail.com'
+my_gmail='********'
+my_pass='*********'
+to_email='*********'
