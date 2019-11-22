@@ -1,0 +1,16 @@
+.
+./notebooks
+./.ipynb_checkpoints
+./Serialized
+./Serialized/helper
+./Serialized/helper/.ipynb_checkpoints
+./Serialized/helper/__pycache__
+./Serialized/.ipynb_checkpoints
+./Serialized/__pycache__
+./Production
+./Production/helper
+./Production/helper/.ipynb_checkpoints
+./Production/helper/__pycache__
+./Production/.ipynb_checkpoints
+./Production/__pycache__
+
