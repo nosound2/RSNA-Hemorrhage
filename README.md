@@ -1,6 +1,6 @@
 
 # Kaggle competition:
-# [RSNA Intracranial Hemorrhage Detectionhttps](https://www.kaggle.com/c/rsna-intracranial-hemorrhage-detection/overview)
+# [RSNA Intracranial Hemorrhage Detection](https://www.kaggle.com/c/rsna-intracranial-hemorrhage-detection/overview)
 
 
 Team "Mind Blowers":
