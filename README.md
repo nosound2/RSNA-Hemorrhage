@@ -49,18 +49,12 @@ ARCHIVE CONTENTS
 Setup
 =====
 
-HARDWARE: (The following specs were used to create the original solution)
--------------------------------------------------------------------------
-
-### For base networks and polled -res (all files in Serialized):
+### HARDWARE: (The following specs were used to create the original solution)
 
 CPU intel i9-9920, RAM 64G, GPU Tesla V100, GPU Titan RTX.
 
 
-SOFTWARE (python packages are detailed separately in requirements.txt):
------------------------------------------------------------------------
-
-### For base networks and polled -res (all files in Serialized):
+### SOFTWARE (python packages are detailed separately in requirements.txt):
 
 OS: Ubuntu 18.04 TLS
 
