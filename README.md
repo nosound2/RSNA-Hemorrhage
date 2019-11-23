@@ -1,6 +1,7 @@
----
-title: "Kaggle competition   \n  \nRSNA Intracranial Hemorrhage Detectionhttps://www.kaggle.com/c/rsna-intracranial-hemorrhage-detection/overview"
----
+
+# Kaggle competition:
+# [RSNA Intracranial Hemorrhage Detectionhttps](https://www.kaggle.com/c/rsna-intracranial-hemorrhage-detection/overview)
+
 
 Team "Mind Blowers":
 ====================
@@ -72,12 +73,12 @@ DATA SETUP
 ==========
 
 1.  Download train and test data from Kaggle and update
-    ./Serialized/defenitions.py with the train and test data
+    `./Serialized/defenitions.py` with the train and test data
 
 2.  If you want to use our trained models, download and inflate
     [models](https://drive.google.com/file/d/1TS2alfQ0AtURLPHXtDE9LhMHnLbfipIP/view?usp=sharing)
     (for models in Serialized) put everything in one models folder and update
-    ./Serialize/defenitions.py
+    `./Serialize/defenitions.py`
 
 Data Processing
 ===============
@@ -98,13 +99,13 @@ The last section of the notebook also prepares weights for the training images.
 The weights are selected to simulate the distribution to that we encounter in
 the test images.
 
-`Production/Prepare.ipynb`is used to prepare the train.csv and test.csv for the
+`Production/Prepare.ipynb`is used to prepare the `train.csv` and `test.csv` for the
 base mosels and yuval's Sallow NN
 
 Training Base Models 
 ---------------------
 
-./Serialized/train_base_models.ipynb is used to train the base models using, You
+`./Serialized/train_base_models.ipynb` is used to train the base models using, You
 should change the 2nd cell, and enter part of the name of the GPU you use, and
 the name of the model to train (look at defenitions.py for a list of names).
 Beware, running this notebook to completion will take a day of two.
@@ -114,7 +115,7 @@ Training Full Head models
 
 ### Yuval’s shallow model - (Pooled – Res shallow model)
 
-“./Serialized/Post Full Head Models Train .ipynb” is used to train this shallow
+`./Serialized/Post Full Head Models Train .ipynb` is used to train this shallow
 networks. This notebook trains all the networks. You should change the 2nd to
 reflect the GPU you use.
 
@@ -130,7 +131,7 @@ Inferencing
 
 ### Yuval’s shallow model - (Pooled – Res shallow model):
 
-./Serialized/prepare_ensembling.ipynb is used for inferencing this shallow model
+`./Serialized/prepare_ensembling.ipynb` is used for inferencing this shallow model
 and prepare the results for ensembling.
 
 Ensembling
