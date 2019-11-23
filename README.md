@@ -17,7 +17,7 @@ Private Leaderboard Place: 12
 General
 =======
 
-This archive holds the code and weights which was used to create and inference
+This archive holds the code and weights which were used to create and inference
 the 12th place solution in “RSNA Intracranial Hemorrhage Detection” competition.
 
 The solution consists of the following components, run consecutively
@@ -56,7 +56,6 @@ HARDWARE: (The following specs were used to create the original solution)
 
 CPU intel i9-9920, RAM 64G, GPU Tesla V100, GPU Titan RTX.
 
-For …. ZAHAR
 
 SOFTWARE (python packages are detailed separately in requirements.txt):
 -----------------------------------------------------------------------
@@ -67,13 +66,12 @@ OS: Ubuntu 18.04 TLS
 
 CUDA – 10.1
 
-For … ZAHAR
 
 DATA SETUP
 ==========
 
 1.  Download train and test data from Kaggle and update
-    `./Serialized/defenitions.py` with the train and test data
+    `./Serialized/defenitions.py` with the locations of train and test data
 
 2.  If you want to use our trained models, download and inflate
     [models](https://drive.google.com/file/d/1TS2alfQ0AtURLPHXtDE9LhMHnLbfipIP/view?usp=sharing)
@@ -108,7 +106,13 @@ Training Base Models
 `./Serialized/train_base_models.ipynb` is used to train the base models using, You
 should change the 2nd cell, and enter part of the name of the GPU you use, and
 the name of the model to train (look at defenitions.py for a list of names).
-Beware, running this notebook to completion will take a day of two.
+
+`# here you should set which model parameters you want to choose (see definitions.py) and what GPU to use
+params=parameters['se_resnet101_5'] # se_resnet101_5, se_resnext101_32x4d_3, se_resnext101_32x4d_5
+device=device_by_name("Tesla") # RTX , cpu`
+
+Beware, running this notebook to completion for a single base network will take a day or two.
+
 
 Training Full Head models 
 --------------------------
