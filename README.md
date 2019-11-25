@@ -44,10 +44,13 @@ ARCHIVE CONTENTS
     train the models and the submissions
 
 -   Notebooks – folder, holds jupyter notebooks to prepare metadata, training
-    and inferencing Zahar’s shallow networks, end ensembling the full solution.
+    and inferencing Zahar’s shallow networks, end ensembling the full solution. 
+    It should be run in order appearing in this document below.
 
 Setup
 =====
+
+## Yuval:
 
 ### HARDWARE: (The following specs were used to create the original solution)
 
@@ -59,6 +62,10 @@ CPU intel i9-9920, RAM 64G, GPU Tesla V100, GPU Titan RTX.
 OS: Ubuntu 18.04 TLS
 
 CUDA – 10.1
+
+## Zahar:
+
+GCP virtual machine with n-8 cores and K-80 GPU
 
 
 DATA SETUP
